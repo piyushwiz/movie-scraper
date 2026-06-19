@@ -1,0 +1,12 @@
+{
+  "sources": [
+    {
+      "type": "tmdb",
+      "language": "en-US"
+    },
+    {
+      "type": "tvmaze",
+      "countries": ["US"]
+    }
+  ]
+}
