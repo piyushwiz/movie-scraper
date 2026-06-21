@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fetch recent movies/series into CSV and render a small static site."""
+"""Fetch recent movies into CSV and render a small static site."""
 
 from __future__ import annotations
 
@@ -30,16 +30,50 @@ CSV_FIELDS = [
 ]
 
 
-class TextExtractor(HTMLParser):
+class TableCell:
+    def __init__(self) -> None:
+        self.parts: list[str] = []
+        self.links: list[tuple[str, str]] = []
+
+    def text(self) -> str:
+        return " ".join(" ".join(self.parts).split())
+
+
+class TableParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
-        self.parts: list[str] = []
+        self.rows: list[list[TableCell]] = []
+        self.current_row: list[TableCell] | None = None
+        self.current_cell: TableCell | None = None
+        self.current_href: str | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attrs_dict = dict(attrs)
+        if tag == "tr":
+            self.current_row = []
+        elif tag in {"td", "th"} and self.current_row is not None:
+            self.current_cell = TableCell()
+        elif tag == "a" and self.current_cell is not None:
+            self.current_href = attrs_dict.get("href")
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "a":
+            self.current_href = None
+        elif tag in {"td", "th"} and self.current_row is not None and self.current_cell is not None:
+            self.current_row.append(self.current_cell)
+            self.current_cell = None
+        elif tag == "tr" and self.current_row is not None:
+            if self.current_row:
+                self.rows.append(self.current_row)
+            self.current_row = None
 
     def handle_data(self, data: str) -> None:
-        self.parts.append(data)
-
-    def get_text(self) -> str:
-        return " ".join(" ".join(self.parts).split())
+        if self.current_cell is None:
+            return
+        self.current_cell.parts.append(data)
+        text = clean_text(data)
+        if self.current_href and text:
+            self.current_cell.links.append((text, self.current_href))
 
 
 def today_utc() -> dt.date:
@@ -63,6 +97,19 @@ def fetch_json(url: str, headers: dict[str, str] | None = None) -> Any:
         return json.loads(response.read().decode("utf-8"))
 
 
+def fetch_text(url: str, headers: dict[str, str] | None = None) -> str:
+    request = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "text/html,application/xhtml+xml",
+            "User-Agent": "movie-scraper/1.0 (+https://github.com/)",
+            **(headers or {}),
+        },
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        return response.read().decode("utf-8", errors="replace")
+
+
 def clean_text(value: Any) -> str:
     if value is None:
         return ""
@@ -71,18 +118,26 @@ def clean_text(value: Any) -> str:
     return " ".join(text.split())
 
 
-def strip_html(value: Any) -> str:
-    parser = TextExtractor()
-    parser.feed(clean_text(value))
-    parser.close()
-    return parser.get_text()
-
-
 def parse_date(value: str) -> dt.date | None:
     try:
         return dt.date.fromisoformat(value[:10])
     except (TypeError, ValueError):
         return None
+
+
+def parse_numbers_date(value: str, fallback_year: int) -> dt.date | None:
+    value = clean_text(value).replace("\xa0", " ")
+    for fmt in ("%B %d %Y", "%b %d %Y"):
+        try:
+            return dt.datetime.strptime(value, fmt).date()
+        except ValueError:
+            pass
+    for fmt in ("%B %d %Y", "%b %d %Y"):
+        try:
+            return dt.datetime.strptime(f"{value} {fallback_year}", fmt).date()
+        except ValueError:
+            pass
+    return None
 
 
 def row_key(row: dict[str, str]) -> tuple[str, str, str]:
@@ -123,7 +178,7 @@ def normalize_row(
 def fetch_tmdb(config: dict[str, Any], days_back: int) -> list[dict[str, str]]:
     api_key = os.environ.get("TMDB_API_KEY", "").strip()
     if not api_key:
-        print("Skipping TMDB: set TMDB_API_KEY to enable movie/TV discovery.", file=sys.stderr)
+        print("Skipping TMDB: set TMDB_API_KEY to enable movie discovery.", file=sys.stderr)
         return []
 
     base_url = config.get("base_url", "https://api.themoviedb.org/3")
@@ -132,83 +187,85 @@ def fetch_tmdb(config: dict[str, Any], days_back: int) -> list[dict[str, str]]:
     end_date = today_utc()
 
     rows: list[dict[str, str]] = []
-    specs = [
-        {
-            "path": "/discover/movie",
-            "kind": "movie",
-            "date_field": "primary_release_date",
-            "title_field": "title",
-            "params": {
-                "primary_release_date.gte": start_date.isoformat(),
-                "primary_release_date.lte": end_date.isoformat(),
-                "sort_by": "primary_release_date.desc",
-            },
+    spec = {
+        "path": "/discover/movie",
+        "date_field": "primary_release_date",
+        "title_field": "title",
+        "params": {
+            "primary_release_date.gte": start_date.isoformat(),
+            "primary_release_date.lte": end_date.isoformat(),
+            "sort_by": "primary_release_date.desc",
         },
-        {
-            "path": "/discover/tv",
-            "kind": "series",
-            "tmdb_path": "tv",
-            "date_field": "first_air_date",
-            "title_field": "name",
-            "params": {
-                "first_air_date.gte": start_date.isoformat(),
-                "first_air_date.lte": end_date.isoformat(),
-                "sort_by": "first_air_date.desc",
-            },
-        },
-    ]
-
-    for spec in specs:
-        params = {
-            "api_key": api_key,
-            "language": config.get("language", "en-US"),
-            "page": "1",
-            **spec["params"],
-        }
-        url = f"{base_url}{spec['path']}?{urllib.parse.urlencode(params)}"
-        data = fetch_json(url)
-        for item in data.get("results", []):
-            poster_path = item.get("poster_path") or ""
-            row = normalize_row(
-                title=item.get(spec["title_field"], ""),
-                kind=spec["kind"],
-                release_date=item.get(spec["date_field"], ""),
-                source="TMDB",
-                source_url=f"https://www.themoviedb.org/{spec.get('tmdb_path', spec['kind'])}/{item.get('id')}",
-                summary=item.get("overview", ""),
-                poster_url=f"{image_base_url}{poster_path}" if poster_path else "",
-            )
-            if row:
-                rows.append(row)
+    }
+    params = {
+        "api_key": api_key,
+        "language": config.get("language", "en-US"),
+        "page": "1",
+        **spec["params"],
+    }
+    url = f"{base_url}{spec['path']}?{urllib.parse.urlencode(params)}"
+    data = fetch_json(url)
+    for item in data.get("results", []):
+        poster_path = item.get("poster_path") or ""
+        row = normalize_row(
+            title=item.get(spec["title_field"], ""),
+            kind="movie",
+            release_date=item.get(spec["date_field"], ""),
+            source="TMDB",
+            source_url=f"https://www.themoviedb.org/movie/{item.get('id')}",
+            summary=item.get("overview", ""),
+            poster_url=f"{image_base_url}{poster_path}" if poster_path else "",
+        )
+        if row:
+            rows.append(row)
     return rows
 
 
-def fetch_tvmaze(config: dict[str, Any], days_back: int) -> list[dict[str, str]]:
-    base_url = config.get("base_url", "https://api.tvmaze.com")
-    countries = config.get("countries", ["US"])
+def fetch_the_numbers(config: dict[str, Any], days_back: int) -> list[dict[str, str]]:
+    url = config.get("url", "https://www.the-numbers.com/movies/release-schedule")
     start_date = today_utc() - dt.timedelta(days=days_back)
-    rows: list[dict[str, str]] = []
+    end_date = today_utc()
+    fallback_year = int(config.get("year", today_utc().year))
+    html_doc = fetch_text(url)
 
-    for day_offset in range(days_back + 1):
-        date = start_date + dt.timedelta(days=day_offset)
-        for country in countries:
-            params = urllib.parse.urlencode({"country": country, "date": date.isoformat()})
-            url = f"{base_url}/schedule?{params}"
-            data = fetch_json(url)
-            for episode in data:
-                show = episode.get("show") or {}
-                image = show.get("image") or {}
-                row = normalize_row(
-                    title=show.get("name", ""),
-                    kind="series",
-                    release_date=episode.get("airdate", ""),
-                    source=f"TVMaze {country}",
-                    source_url=show.get("url", ""),
-                    summary=strip_html(show.get("summary", "")),
-                    poster_url=image.get("medium") or image.get("original") or "",
-                )
-                if row:
-                    rows.append(row)
+    parser = TableParser()
+    parser.feed(html_doc)
+    parser.close()
+
+    rows: list[dict[str, str]] = []
+    current_date: dt.date | None = None
+    for table_row in parser.rows:
+        cells = [cell for cell in table_row if cell.text()]
+        if len(cells) < 2:
+            continue
+
+        maybe_date = parse_numbers_date(cells[0].text(), fallback_year)
+        movie_cell = cells[1]
+        if maybe_date is not None:
+            current_date = maybe_date
+        elif current_date is None:
+            continue
+        else:
+            movie_cell = cells[0]
+
+        if current_date < start_date or current_date > end_date:
+            continue
+
+        for title, href in movie_cell.links:
+            title = title.removesuffix("(IMAX)").strip()
+            if not title or title.lower() in {"movie", "release date"}:
+                continue
+            row = normalize_row(
+                title=title,
+                kind="movie",
+                release_date=current_date.isoformat(),
+                source="The Numbers",
+                source_url=urllib.parse.urljoin(url, href),
+                summary="",
+                poster_url="",
+            )
+            if row:
+                rows.append(row)
     return rows
 
 
@@ -232,6 +289,8 @@ def merge_rows(existing: list[dict[str, str]], incoming: list[dict[str, str]], k
     cutoff = today_utc() - dt.timedelta(days=keep_days)
     merged: dict[tuple[str, str, str], dict[str, str]] = {}
     for row in [*existing, *incoming]:
+        if clean_text(row.get("kind", "")).casefold() != "movie":
+            continue
         release = parse_date(row.get("release_date", ""))
         if release is None or release < cutoff:
             continue
@@ -255,7 +314,7 @@ def render_site(csv_path: Path, output_path: Path, rows: list[dict[str, str]]) -
 <body>
   <header class="topbar">
     <div>
-      <p class="eyebrow">Daily release feed</p>
+      <p class="eyebrow">Movie release feed</p>
       <h1>Fresh Screen Releases</h1>
     </div>
     <a class="csv-link" href="{csv_href}">CSV</a>
@@ -265,8 +324,8 @@ def render_site(csv_path: Path, output_path: Path, rows: list[dict[str, str]]) -
       <div><strong>{len(rows)}</strong><span>tracked titles</span></div>
       <div><strong>{generated_at[:10]}</strong><span>last build</span></div>
     </section>
-    <section class="grid" aria-label="Movies and series">
-      {cards or '<p class="empty">No releases yet. Run the scraper after adding a source key.</p>'}
+    <section class="grid" aria-label="Movies">
+      {cards or '<p class="empty">No releases yet. Run the scraper to refresh movie sources.</p>'}
     </section>
   </main>
 </body>
@@ -487,7 +546,7 @@ footer {
 
 def load_config(path: Path) -> dict[str, Any]:
     if not path.exists():
-        return {"sources": [{"type": "tvmaze", "countries": ["US"]}]}
+        return {"sources": [{"type": "the_numbers"}]}
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -498,8 +557,8 @@ def fetch_sources(config: dict[str, Any], days_back: int) -> list[dict[str, str]
         try:
             if source_type == "tmdb":
                 rows.extend(fetch_tmdb(source, days_back))
-            elif source_type == "tvmaze":
-                rows.extend(fetch_tvmaze(source, days_back))
+            elif source_type == "the_numbers":
+                rows.extend(fetch_the_numbers(source, days_back))
             else:
                 print(f"Skipping unknown source type: {source_type}", file=sys.stderr)
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as error:
@@ -508,7 +567,7 @@ def fetch_sources(config: dict[str, Any], days_back: int) -> list[dict[str, str]
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Update movie/series CSV and static site.")
+    parser = argparse.ArgumentParser(description="Update movie CSV and static site.")
     parser.add_argument("--config", default="sources.json", help="Source configuration JSON.")
     parser.add_argument("--csv", default="docs/data/releases.csv", help="CSV output path.")
     parser.add_argument("--site", default="docs/index.html", help="Static site HTML output path.")

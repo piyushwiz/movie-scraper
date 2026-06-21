@@ -5,8 +5,7 @@
       "language": "en-US"
     },
     {
-      "type": "tvmaze",
-      "countries": ["US"]
+      "type": "the_numbers"
     }
   ]
 }

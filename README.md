@@ -1,6 +1,6 @@
 # movie-scraper
 
-A tiny daily movie/series release feed. The scraper writes `docs/data/releases.csv` and renders a GitHub Pages-ready static site in `docs/`.
+A tiny movie release feed. The scraper writes `docs/data/releases.csv` and renders a GitHub Pages-ready static site in `docs/`.
 
 ## Run locally
 
@@ -10,8 +10,8 @@ python movie_scraper.py
 
 By default it uses:
 
-- TMDB for movies and series when `TMDB_API_KEY` is set.
-- TVMaze for US series schedules without an API key.
+- TMDB for movies when `TMDB_API_KEY` is set.
+- The Numbers theatrical release schedule without an API key.
 
 To render the site from the current CSV only:
 
@@ -24,7 +24,7 @@ python movie_scraper.py --site-only
 1. Create a TMDB API key at themoviedb.org.
 2. In your GitHub repo, add it as a repository secret named `TMDB_API_KEY`.
 3. Enable GitHub Pages with source `Deploy from a branch`, branch `main`, folder `/docs`.
-4. The workflow in `.github/workflows/update-releases.yml` runs every day and commits changed CSV/site output.
+4. The workflow in `.github/workflows/update-releases.yml` runs every 2 hours and commits changed CSV/site output.
 
 ## Files
 
