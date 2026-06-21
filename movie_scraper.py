@@ -365,8 +365,8 @@ DEFAULT_CSS = """* {
 body {
   margin: 0;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #071426;
-  color: #e9f2ff;
+  background: #fff1f7;
+  color: #351424;
 }
 
 a {
@@ -379,13 +379,13 @@ a {
   justify-content: space-between;
   gap: 24px;
   padding: 32px clamp(18px, 5vw, 64px) 24px;
-  background: #0b1c33;
-  border-bottom: 1px solid #1e3a5f;
+  background: #f8c8dc;
+  border-bottom: 1px solid #e78fb7;
 }
 
 .eyebrow {
   margin: 0 0 8px;
-  color: #7fb3ff;
+  color: #9f235f;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0;
@@ -401,12 +401,12 @@ h1 {
 .csv-link {
   min-height: 40px;
   padding: 10px 14px;
-  border: 1px solid #3f6ea5;
+  border: 1px solid #d54f8a;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 700;
-  background: #102846;
-  color: #f5fbff;
+  background: #b81e68;
+  color: #fff9fc;
 }
 
 main {
@@ -424,8 +424,8 @@ main {
 
 .stats div {
   padding: 16px;
-  background: #0e223d;
-  border: 1px solid #1e3a5f;
+  background: #fff9fc;
+  border: 1px solid #f0a6c6;
   border-radius: 8px;
 }
 
@@ -440,7 +440,7 @@ main {
 
 .stats span {
   margin-top: 4px;
-  color: #a8c4e6;
+  color: #8a4c68;
 }
 
 .grid {
@@ -454,13 +454,13 @@ main {
   grid-template-columns: 96px 1fr;
   min-height: 170px;
   overflow: hidden;
-  background: #0e223d;
-  border: 1px solid #1e3a5f;
+  background: #fff9fc;
+  border: 1px solid #f0a6c6;
   border-radius: 8px;
 }
 
 .poster {
-  background: #102846;
+  background: #f6b7d2;
 }
 
 .poster img,
@@ -473,7 +473,7 @@ main {
 
 .poster-fallback {
   background:
-    linear-gradient(135deg, #102846 0%, #102846 48%, #2f80ed 49%, #2f80ed 54%, #d6b35a 55%, #d6b35a 100%);
+    linear-gradient(135deg, #f6b7d2 0%, #f6b7d2 48%, #b81e68 49%, #b81e68 54%, #ffd36e 55%, #ffd36e 100%);
 }
 
 .release-copy {
@@ -487,7 +487,7 @@ main {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  color: #a8c4e6;
+  color: #9f235f;
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -504,7 +504,7 @@ h2 {
   flex: 1;
   margin: 0;
   overflow: hidden;
-  color: #c8d8ea;
+  color: #6f3a53;
   font-size: 0.9rem;
   line-height: 1.45;
   -webkit-line-clamp: 3;
@@ -513,7 +513,7 @@ h2 {
 
 footer {
   margin-top: 12px;
-  color: #7fb3ff;
+  color: #b81e68;
   font-size: 0.84rem;
   font-weight: 700;
 }
@@ -521,8 +521,8 @@ footer {
 .empty {
   margin: 0;
   padding: 24px;
-  background: #0e223d;
-  border: 1px solid #1e3a5f;
+  background: #fff9fc;
+  border: 1px solid #f0a6c6;
   border-radius: 8px;
 }
 
