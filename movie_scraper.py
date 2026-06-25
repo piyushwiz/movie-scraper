@@ -361,12 +361,11 @@ def render_card(row: dict[str, str]) -> str:
 DEFAULT_CSS = """* {
   box-sizing: border-box;
 }
-
 body {
   margin: 0;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #fff1f7;
-  color: #351424;
+  background: #0d0d0d;
+  color: #f2f2f2;
 }
 
 a {
@@ -379,16 +378,15 @@ a {
   justify-content: space-between;
   gap: 24px;
   padding: 32px clamp(18px, 5vw, 64px) 24px;
-  background: #f8c8dc;
-  border-bottom: 1px solid #e78fb7;
+  background: #141414;
+  border-bottom: 1px solid #3b1b20;
 }
 
 .eyebrow {
   margin: 0 0 8px;
-  color: #9f235f;
+  color: #d06a75;
   font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -396,17 +394,23 @@ h1 {
   margin: 0;
   font-size: clamp(2rem, 4vw, 4.5rem);
   line-height: 0.95;
+  color: #ffffff;
 }
 
 .csv-link {
   min-height: 40px;
   padding: 10px 14px;
-  border: 1px solid #d54f8a;
+  border: 1px solid #7c2f3c;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 700;
-  background: #b81e68;
-  color: #fff9fc;
+  background: #551b24;
+  color: #ffffff;
+  transition: 0.2s ease;
+}
+
+.csv-link:hover {
+  background: #6d2430;
 }
 
 main {
@@ -415,38 +419,21 @@ main {
   padding: 24px 0 48px;
 }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
 .stats div {
   padding: 16px;
-  background: #fff9fc;
-  border: 1px solid #f0a6c6;
+  background: #171717;
+  border: 1px solid #2b2b2b;
   border-radius: 8px;
-}
-
-.stats strong,
-.stats span {
-  display: block;
 }
 
 .stats strong {
   font-size: 1.35rem;
+  color: #ffffff;
 }
 
 .stats span {
   margin-top: 4px;
-  color: #8a4c68;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
+  color: #a8a8a8;
 }
 
 .release-card {
@@ -454,26 +441,31 @@ main {
   grid-template-columns: 96px 1fr;
   min-height: 170px;
   overflow: hidden;
-  background: #fff9fc;
-  border: 1px solid #f0a6c6;
+  background: #171717;
+  border: 1px solid #2d2d2d;
   border-radius: 8px;
+  transition: transform .2s ease, border-color .2s ease;
+}
+
+.release-card:hover {
+  transform: translateY(-2px);
+  border-color: #7c2f3c;
 }
 
 .poster {
-  background: #f6b7d2;
-}
-
-.poster img,
-.poster-fallback {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  background: #202020;
 }
 
 .poster-fallback {
   background:
-    linear-gradient(135deg, #f6b7d2 0%, #f6b7d2 48%, #b81e68 49%, #b81e68 54%, #ffd36e 55%, #ffd36e 100%);
+    linear-gradient(
+      135deg,
+      #232323 0%,
+      #232323 45%,
+      #5d1f2a 46%,
+      #7a2d39 60%,
+      #2b2b2b 100%
+    );
 }
 
 .release-copy {
@@ -487,16 +479,17 @@ main {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  color: #9f235f;
+  color: #d06a75;
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
 }
 
 h2 {
-  margin: 8px 0 8px;
+  margin: 8px 0;
   font-size: 1.02rem;
   line-height: 1.2;
+  color: #ffffff;
 }
 
 .release-copy p {
@@ -504,7 +497,7 @@ h2 {
   flex: 1;
   margin: 0;
   overflow: hidden;
-  color: #6f3a53;
+  color: #b8b8b8;
   font-size: 0.9rem;
   line-height: 1.45;
   -webkit-line-clamp: 3;
@@ -513,7 +506,7 @@ h2 {
 
 footer {
   margin-top: 12px;
-  color: #b81e68;
+  color: #cf6d78;
   font-size: 0.84rem;
   font-weight: 700;
 }
@@ -521,10 +514,12 @@ footer {
 .empty {
   margin: 0;
   padding: 24px;
-  background: #fff9fc;
-  border: 1px solid #f0a6c6;
+  background: #171717;
+  border: 1px solid #2d2d2d;
   border-radius: 8px;
+  color: #b8b8b8;
 }
+
 
 @media (max-width: 640px) {
   .topbar {
