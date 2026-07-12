@@ -5,8 +5,8 @@
 body {
   margin: 0;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #fff1f7;
-  color: #351424;
+  background: #0f0f0f;
+  color: #f1f1f1;
 }
 
 a {
@@ -15,17 +15,21 @@ a {
 
 .topbar {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 32px clamp(18px, 5vw, 64px) 24px;
-  background: #f8c8dc;
-  border-bottom: 1px solid #e78fb7;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 18px clamp(18px, 5vw, 64px);
+  background: rgba(15, 15, 15, 0.94);
+  border-bottom: 1px solid #272727;
+  backdrop-filter: blur(14px);
 }
 
 .eyebrow {
-  margin: 0 0 8px;
-  color: #9f235f;
+  margin: 0 0 6px;
+  color: #ff4747;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0;
@@ -34,38 +38,46 @@ a {
 
 h1 {
   margin: 0;
-  font-size: clamp(2rem, 4vw, 4.5rem);
-  line-height: 0.95;
+  font-size: clamp(1.65rem, 3vw, 3.2rem);
+  line-height: 1;
+  color: #ffffff;
 }
 
 .csv-link {
   min-height: 40px;
-  padding: 10px 14px;
-  border: 1px solid #d54f8a;
+  padding: 10px 16px;
+  border: 1px solid #3a3a3a;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 700;
-  background: #b81e68;
-  color: #fff9fc;
+  background: #ff0000;
+  color: #ffffff;
+  box-shadow: 0 10px 30px rgba(255, 0, 0, 0.2);
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.csv-link:hover {
+  background: #cc0000;
+  transform: translateY(-1px);
 }
 
 main {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1320px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 24px 0 48px;
+  padding: 22px 0 48px;
 }
 
 .stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 14px;
+  margin-bottom: 22px;
 }
 
 .stats div {
-  padding: 16px;
-  background: #fff9fc;
-  border: 1px solid #f0a6c6;
+  padding: 16px 18px;
+  background: #181818;
+  border: 1px solid #2b2b2b;
   border-radius: 8px;
 }
 
@@ -76,31 +88,40 @@ main {
 
 .stats strong {
   font-size: 1.35rem;
+  color: #ffffff;
 }
 
 .stats span {
   margin-top: 4px;
-  color: #8a4c68;
+  color: #aaaaaa;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 22px 16px;
 }
 
 .release-card {
-  display: grid;
-  grid-template-columns: 96px 1fr;
-  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
   overflow: hidden;
-  background: #fff9fc;
-  border: 1px solid #f0a6c6;
+  background: #181818;
+  border: 1px solid transparent;
   border-radius: 8px;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.release-card:hover {
+  transform: translateY(-3px);
+  background: #202020;
+  border-color: #3a3a3a;
 }
 
 .poster {
-  background: #f6b7d2;
+  aspect-ratio: 16 / 9;
+  background: #242424;
 }
 
 .poster img,
@@ -113,22 +134,23 @@ main {
 
 .poster-fallback {
   background:
-    linear-gradient(135deg, #f6b7d2 0%, #f6b7d2 48%, #b81e68 49%, #b81e68 54%, #ffd36e 55%, #ffd36e 100%);
+    radial-gradient(circle at 24% 24%, rgba(255, 255, 255, 0.12), transparent 30%),
+    linear-gradient(135deg, #262626 0%, #151515 46%, #8f0000 47%, #ff0000 56%, #2a2a2a 57%, #171717 100%);
 }
 
 .release-copy {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 14px;
+  padding: 12px 4px 2px;
 }
 
 .meta {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  color: #9f235f;
-  font-size: 0.78rem;
+  color: #aaaaaa;
+  font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -136,7 +158,8 @@ main {
 h2 {
   margin: 8px 0 8px;
   font-size: 1.02rem;
-  line-height: 1.2;
+  line-height: 1.25;
+  color: #ffffff;
 }
 
 .release-copy p {
@@ -144,7 +167,7 @@ h2 {
   flex: 1;
   margin: 0;
   overflow: hidden;
-  color: #6f3a53;
+  color: #b9b9b9;
   font-size: 0.9rem;
   line-height: 1.45;
   -webkit-line-clamp: 3;
@@ -153,7 +176,7 @@ h2 {
 
 footer {
   margin-top: 12px;
-  color: #b81e68;
+  color: #ff4747;
   font-size: 0.84rem;
   font-weight: 700;
 }
@@ -161,9 +184,10 @@ footer {
 .empty {
   margin: 0;
   padding: 24px;
-  background: #fff9fc;
-  border: 1px solid #f0a6c6;
+  background: #181818;
+  border: 1px solid #2b2b2b;
   border-radius: 8px;
+  color: #b9b9b9;
 }
 
 @media (max-width: 640px) {
@@ -178,6 +202,10 @@ footer {
   }
 
   .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .grid {
     grid-template-columns: 1fr;
   }
 }
