@@ -24,7 +24,7 @@ python movie_scraper.py --site-only
 1. Create a TMDB API key at themoviedb.org.
 2. In your GitHub repo, add it as a repository secret named `TMDB_API_KEY`.
 3. Enable GitHub Pages with source `Deploy from a branch`, branch `main`, folder `/docs`.
-4. The workflow in `.github/workflows/update-releases.yml` runs every 2 hours and commits changed CSV/site output.
+4. Run the workflow in `.github/workflows/update-releases.yml` manually whenever you want to refresh the feed. It commits changed CSV/site output.
 
 ## Files
 
